@@ -1,0 +1,317 @@
+Microsoft (R) Macro Assembler Version 6.11		    11/19/17 15:28:14
+4-5-2.asm						     Page 1 - 1
+
+
+ 0000				DATA SEGMENT
+ 0000 00 00			    INPUTNUM DB 0,0
+ 0002 00 00			    GUESSNUM DB 0,0
+ 0004 0000			    GUESSTIME DW 0
+ 0006 00			    INPUTDIGITS DB 0
+ 0007				DATA ENDS
+ 0000				CODE SEGMENT PARA 'CODE'
+				    ASSUME CS:CODE, DS:DATA
+				    
+ 0000				MAIN PROC FAR
+ 0000  E8 0148			    CALL GET_INPUT
+ 0003  E8 0100			    CALL HIDE_NUMBER
+ 0006  E8 0022			    CALL GUESS_INPUT
+ 0009  E8 00B4			    CALL SHOW_ANSWER
+ 000C  EB F2			    JMP MAIN
+ 000E				MAIN ENDP
+
+ 000E				INC_GUESSTIME PROC NEAR
+				    ; MOV AX, DATA ; DEBUG
+ 000E  B8 0080			    MOV AX, 0080H ; PRODUCT
+ 0011  8E D8			    MOV DS, AX
+ 0013  8E C0			    MOV ES, AX
+ 0015  8D 36 0004 R		    LEA SI, GUESSTIME
+ 0019  8D 3E 0004 R		    LEA DI, GUESSTIME
+ 001D  FC			    CLD
+ 001E  AD			    LODSW
+ 001F  FE C0			    INC AL
+ 0021  27			    DAA
+ 0022  86 C4			    XCHG AL, AH
+ 0024  14 00			    ADC AL, 0
+ 0026  27			    DAA
+ 0027  86 C4			    XCHG AL, AH
+ 0029  AB			    STOSW
+ 002A  C3			    RET
+ 002B				INC_GUESSTIME ENDP
+
+ 002B				GUESS_INPUT PROC NEAR
+				    ; DISPLAY INPUT
+ 002B  E8 006B			    CALL GUESS_DISPLAY
+				    ; READ BUTTON
+ 002E  B4 00			    MOV AH, 0
+ 0030  CD 33			    INT 33H
+ 0032  2C 10			    SUB AL, 10000B
+				    ; IF AVAILABLE
+ 0034  3C 0A			    CMP AL, 10
+ 0036  77 F3			    JA GUESS_INPUT ; NO
+				    ; YES
+				    ; END IF
+				    ; IF PRESS A
+ 0038  3C 0A			    CMP AL, 0AH
+ 003A  75 01			    JNE INPUT_TWO ; NO
+ 003C  C3			    RET ; YES
+				    ; END IF
+ 003D				INPUT_TWO:
+				    ; WRITE TO INPUTNUM
+ 003D  33 DB			    XOR BX, BX
+ 003F  8A 1E 0006 R		    MOV BL, BYTE PTR INPUTDIGITS
+				    ; MOV CX, DATA ; DEBUG
+ 0043  B9 0080			    MOV CX, 0080H ; PRODUCT
+ 0046  8E D9			    MOV DS, CX
+ 0048  8E C1			    MOV ES, CX
+ 004A  8D 36 0000 R		    LEA SI, INPUTNUM
+ 004E  88 00			    MOV BYTE PTR [BX][SI], AL
+ 0050  FE 06 0006 R		    INC BYTE PTR INPUTDIGITS
+				    ; IF INPUT TWO DIGITS
+ 0054  80 3E 0006 R 02		    CMP BYTE PTR INPUTDIGITS, 2
+ 0059  75 D0			    JNE GUESS_INPUT ; NO
+ 005B  C6 06 0006 R 00		    MOV BYTE PTR INPUTDIGITS, 0 ; YES
+				    ; END IF
+				    ; INCREASE GUESSTIME
+ 0060  E8 FFAB			    CALL INC_GUESSTIME
+ 0063  FC			    CLD
+ 0064  8D 36 0000 R		    LEA SI, INPUTNUM
+ 0068  8D 3E 0002 R		    LEA DI, GUESSNUM
+				    ; IF INPUT IS BIGGER
+ 006C  A6			    CMPSB
+ 006D  77 08			    JA IS_BIGGER ; BIGGER
+ 006F  72 0F			    JB IS_SMALLER ; SMALLER
+				    ; END IF
+				    ; IF INPUT IS BIGGER
+ 0071  A6			    CMPSB
+ 0072  77 03			    JA IS_BIGGER ; BIGGER
+ 0074  72 0A			    JB IS_SMALLER ; SMALLER
+ 0076  C3			    RET ; EQUAL
+				    ; END IF
+ 0077				IS_BIGGER:
+ 0077  B4 00			    MOV AH, 0
+ 0079  BA 7000			    MOV DX, 7000H
+ 007C  CD 30			    INT 30H
+ 007E  EB 07			    JMP CLEAR_INPUT
+ 0080				IS_SMALLER:
+ 0080  B4 00			    MOV AH, 0
+ 0082  BA 0070			    MOV DX, 0070H
+ 0085  CD 30			    INT 30H
+ 0087				CLEAR_INPUT:
+ 0087  8D 36 0000 R		    LEA SI, INPUTNUM
+ 008B  8D 3E 0000 R		    LEA DI, INPUTNUM
+ 008F  FC			    CLD
+ 0090  B9 0002			    MOV CX, 2
+ 0093  B0 00			    MOV AL, 0
+ 0095  F3/ AA			    REP STOSB
+ 0097  EB 92			    JMP GUESS_INPUT
+ 0099				GUESS_INPUT ENDP
+
+ 0099				GUESS_DISPLAY PROC NEAR
+				    ; MOV AX, DATA ; DEBUG
+ 0099  B8 0080			    MOV AX, 0080H ; PRODUCT
+ 009C  8E D8			    MOV DS, AX
+ 009E  8D 36 0000 R		    LEA SI, INPUTNUM
+ 00A2  B1 04			    MOV CL, 4
+ 00A4  FC			    CLD
+ 00A5  AC			    LODSB
+ 00A6  8A D0			    MOV DL, AL
+ 00A8  D2 E2			    SHL DL, CL
+ 00AA  AC			    LODSB
+ 00AB  0A D0			    OR DL, AL
+ 00AD  B4 00			    MOV AH, 0
+ 00AF  B0 3F			    MOV AL, 00111111B
+ 00B1  CD 32			    INT 32H
+ 00B3  B4 02			    MOV AH, 2
+ 00B5  CD 32			    INT 32H
+ 00B7  B4 01			    MOV AH, 1
+ 00B9  8B 16 0004 R		    MOV DX, WORD PTR GUESSTIME
+ 00BD  CD 32			    INT 32H
+ 00BF  C3			    RET
+ 00C0				GUESS_DISPLAY ENDP
+
+ 00C0				SHOW_ANSWER PROC NEAR
+				    ; CLEAR LED
+ 00C0  B4 00			    MOV AH, 0
+ 00C2  BA 0000			    MOV DX, 0
+ 00C5  CD 30			    INT 30H
+				    ; DISPLAY ANSWER
+				    ; MOV AX, DATA ; DEBUG
+ 00C7  B8 0080			    MOV AX, 0080H ; PRODUCT
+ 00CA  8E D8			    MOV DS, AX
+ 00CC  8E C0			    MOV ES, AX
+ 00CE  8D 36 0002 R		    LEA SI, GUESSNUM
+ 00D2  B1 04			    MOV CL, 4
+ 00D4  FC			    CLD
+ 00D5  AC			    LODSB
+ 00D6  8A D0			    MOV DL, AL
+ 00D8  D2 E2			    SHL DL, CL
+ 00DA  AC			    LODSB
+ 00DB  0A D0			    OR DL, AL
+ 00DD  B4 00			    MOV AH, 0
+ 00DF  B0 30			    MOV AL, 00110000B
+ 00E1  CD 32			    INT 32H
+ 00E3  B4 02			    MOV AH, 2
+ 00E5  CD 32			    INT 32H
+				    ; READ BUTTON
+ 00E7  B4 00			    MOV AH, 0
+ 00E9  CD 33			    INT 33H
+ 00EB  2C 10			    SUB AL, 10000B
+				    ; IF AVAILABLE
+ 00ED  3C 0A			    CMP AL, 10
+ 00EF  77 CF			    JA SHOW_ANSWER ; NO
+				    ; YES
+				    ; END IF
+				    ; CLEAR INPUTNUM
+ 00F1  B0 00			    MOV AL, 0
+ 00F3  8D 3E 0000 R		    LEA DI, INPUTNUM
+ 00F7  B9 0002			    MOV CX, 2
+ 00FA  F3/ AA			    REP STOSB
+				    ; CLEAR GUESSNUM
+ 00FC  8D 3E 0002 R		    LEA DI, GUESSNUM
+ 0100  B9 0002			    MOV CX, 2
+ 0103  F3/ AA			    REP STOSB
+ 0105  C3			    RET
+ 0106				SHOW_ANSWER ENDP
+
+ 0106				HIDE_NUMBER PROC NEAR
+				    ; COPY TO GUESSNUM
+				    ; MOV BX, DATA ; DEBUG
+ 0106  BB 0080			    MOV BX, 0080H ; PRODUCT
+ 0109  8E DB			    MOV DS, BX
+ 010B  8E C3			    MOV ES, BX
+ 010D  8D 36 0000 R		    LEA SI, INPUTNUM
+ 0111  8D 3E 0002 R		    LEA DI, GUESSNUM
+ 0115  FC			    CLD
+ 0116  B9 0002			    MOV CX, 2
+ 0119  F3/ A4			    REP MOVSB
+				    ; CLEAR INPUTNUM
+ 011B  8D 3E 0000 R		    LEA DI, INPUTNUM
+ 011F  B9 0002			    MOV CX, 2
+ 0122  B0 00			    MOV AL, 0
+ 0124  F3/ AA			    REP STOSB
+ 0126				SET_ALL_F:
+				    ; SHOW FFFFFFFF
+ 0126  B4 00			    MOV AH, 0
+ 0128  B0 FF			    MOV AL, 0FFFFH
+ 012A  CD 32			    INT 32H
+ 012C  BA FFFF			    MOV DX, 0FFFFH
+ 012F  B4 01			    MOV AH, 1
+ 0131  CD 32			    INT 32H
+ 0133  B4 02			    MOV AH, 2
+ 0135  CD 32			    INT 32H
+				    ; READ BUTTON
+ 0137  B4 00			    MOV AH, 0
+ 0139  CD 33			    INT 33H
+				    ; IF AVAILABLE
+ 013B  2C 10			    SUB AL, 10000B
+ 013D  3C 0A			    CMP AL, 10
+ 013F  73 E5			    JAE SET_ALL_F ; NO
+				    ; YES
+				    ; END IF
+ 0141  8D 3E 0000 R		    LEA DI, INPUTNUM
+ 0145  AA			    STOSB
+ 0146  FE 06 0006 R		    INC BYTE PTR INPUTDIGITS
+ 014A  C3			    RET
+ 014B				HIDE_NUMBER ENDP
+
+ 014B				GET_INPUT PROC NEAR
+				    ; DISPLAY
+ 014B  E8 0023			    CALL INPUT_DISPLAY
+				    ; READ BUTTON
+ 014E  B4 00			    MOV AH, 0
+ 0150  CD 33			    INT 33H
+				    ; IF AVAILABLE
+ 0152  2C 10			    SUB AL, 10000B
+ 0154  3C 0A			    CMP AL, 10
+ 0156  77 F3			    JA GET_INPUT ; NO
+				    ; YES
+				    ; END IF
+				    ; IF PRESS A
+ 0158  3C 0A			    CMP AL, 0AH
+ 015A  75 01			    JNE INPUT_NUMBER ; NO
+ 015C  C3			    RET ; YES
+				    ; END IF
+ 015D				INPUT_NUMBER:
+				    ; WRITE TO INPUTNUM
+				    ; MOV BX, DATA ; DEBUG
+ 015D  BB 0080			    MOV BX, 0080H ; PRODUCT
+ 0160  8E DB			    MOV DS, BX
+ 0162  8E C3			    MOV ES, BX
+ 0164  8D 36 0001 R		    LEA SI, INPUTNUM + 1
+ 0168  8D 3E 0000 R		    LEA DI, INPUTNUM
+ 016C  FC			    CLD
+ 016D  A4			    MOVSB
+ 016E  AA			    STOSB
+ 016F  EB DA			    JMP GET_INPUT
+ 0171				GET_INPUT ENDP
+
+ 0171				INPUT_DISPLAY PROC NEAR
+				    ; MOV AX, DATA ; DEBUG
+ 0171  B8 0080			    MOV AX, 0080H ; PRODUCT
+ 0174  8E D8			    MOV DS, AX
+ 0176  8D 36 0000 R		    LEA SI, INPUTNUM
+ 017A  B1 04			    MOV CL, 4
+ 017C  FC			    CLD
+ 017D  AC			    LODSB
+ 017E  8A D0			    MOV DL, AL
+ 0180  D2 E2			    SHL DL, CL
+ 0182  AC			    LODSB
+ 0183  0A D0			    OR DL, AL
+ 0185  B4 00			    MOV AH, 0
+ 0187  B0 3F			    MOV AL, 00111111B
+ 0189  CD 32			    INT 32H
+ 018B  B4 02			    MOV AH, 2
+ 018D  CD 32			    INT 32H
+ 018F  B4 01			    MOV AH, 1
+ 0191  BA FFFF			    MOV DX, 0FFFFH
+ 0194  CD 32			    INT 32H
+ 0196  C3			    RET
+ 0197				INPUT_DISPLAY ENDP
+
+ 0197				CODE ENDS
+				END MAIN
+Microsoft (R) Macro Assembler Version 6.11		    11/19/17 15:28:14
+4-5-2.asm						     Symbols 2 - 1
+
+
+
+
+Segments and Groups:
+
+                N a m e                 Size     Length   Align   Combine Class
+
+CODE . . . . . . . . . . . . . .	16 Bit	 0197	  Para	  Private 'CODE'	
+DATA . . . . . . . . . . . . . .	16 Bit	 0007	  Para	  Private 
+
+
+Procedures,  parameters and locals:
+
+                N a m e                 Type     Value    Attr
+
+GET_INPUT  . . . . . . . . . . .	P Near	 014B	  CODE	Length= 0026 Private
+GUESS_DISPLAY  . . . . . . . . .	P Near	 0099	  CODE	Length= 0027 Private
+GUESS_INPUT  . . . . . . . . . .	P Near	 002B	  CODE	Length= 006E Private
+HIDE_NUMBER  . . . . . . . . . .	P Near	 0106	  CODE	Length= 0045 Private
+INC_GUESSTIME  . . . . . . . . .	P Near	 000E	  CODE	Length= 001D Private
+INPUT_DISPLAY  . . . . . . . . .	P Near	 0171	  CODE	Length= 0026 Private
+MAIN . . . . . . . . . . . . . .	P Far	 0000	  CODE	Length= 000E Private
+SHOW_ANSWER  . . . . . . . . . .	P Near	 00C0	  CODE	Length= 0046 Private
+
+
+Symbols:
+
+                N a m e                 Type     Value    Attr
+
+CLEAR_INPUT  . . . . . . . . . .	L Near	 0087	  CODE	
+GUESSNUM . . . . . . . . . . . .	Byte	 0002	  DATA	
+GUESSTIME  . . . . . . . . . . .	Word	 0004	  DATA	
+INPUTDIGITS  . . . . . . . . . .	Byte	 0006	  DATA	
+INPUTNUM . . . . . . . . . . . .	Byte	 0000	  DATA	
+INPUT_NUMBER . . . . . . . . . .	L Near	 015D	  CODE	
+INPUT_TWO  . . . . . . . . . . .	L Near	 003D	  CODE	
+IS_BIGGER  . . . . . . . . . . .	L Near	 0077	  CODE	
+IS_SMALLER . . . . . . . . . . .	L Near	 0080	  CODE	
+SET_ALL_F  . . . . . . . . . . .	L Near	 0126	  CODE	
+
+	   0 Warnings
+	   0 Errors

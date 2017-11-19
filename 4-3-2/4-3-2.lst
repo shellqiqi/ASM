@@ -1,0 +1,61 @@
+Microsoft (R) Macro Assembler Version 6.11		    11/19/17 14:30:20
+4-3-2.asm						     Page 1 - 1
+
+
+ 0000				CODE SEGMENT PARA 'CODE'
+				    ASSUME CS:CODE
+ 0000				START:
+ 0000  33 D2			    XOR DX, DX ; OUTPUT
+ 0002				DISPLAY:
+ 0002  B4 00			    MOV AH, 0
+ 0004  B0 0F			    MOV AL, 1111B
+ 0006  CD 32			    INT 32H ; ENABLE DIGITS
+ 0008  B4 01			    MOV AH, 1
+ 000A  CD 32			    INT 32H ; DISPLAY DX
+				    ; READBUTTON
+ 000C  B4 00			    MOV AH, 0
+ 000E  CD 33			    INT 33H
+ 0010  2C 10			    SUB AL, 10000B
+				    ; IF AVAILABLE
+ 0012  3C 0A			    CMP AL, 10
+ 0014  73 EC			    JAE DISPLAY ; NO
+				    ; YES
+				    ; END IF
+				    ; IF ALREADY 4 DIGITS
+ 0016  81 FA 0FFF		    CMP DX, 0FFFH
+ 001A  77 08			    JA CLEAR ; YES
+				    ; NO
+				    ; END IF
+ 001C  B1 04			    MOV CL, 4
+ 001E  D3 E2			    SHL DX, CL
+ 0020  0A D0			    OR DL, AL
+ 0022  EB DE			    JMP DISPLAY
+ 0024				CLEAR:
+ 0024  33 D2			    XOR DX, DX
+ 0026  0A D0			    OR DL, AL
+ 0028  EB D8			    JMP DISPLAY
+ 002A				CODE ENDS
+				END START
+Microsoft (R) Macro Assembler Version 6.11		    11/19/17 14:30:20
+4-3-2.asm						     Symbols 2 - 1
+
+
+
+
+Segments and Groups:
+
+                N a m e                 Size     Length   Align   Combine Class
+
+CODE . . . . . . . . . . . . . .	16 Bit	 002A	  Para	  Private 'CODE'	
+
+
+Symbols:
+
+                N a m e                 Type     Value    Attr
+
+CLEAR  . . . . . . . . . . . . .	L Near	 0024	  CODE	
+DISPLAY  . . . . . . . . . . . .	L Near	 0002	  CODE	
+START  . . . . . . . . . . . . .	L Near	 0000	  CODE	
+
+	   0 Warnings
+	   0 Errors

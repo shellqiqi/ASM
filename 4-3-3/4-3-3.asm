@@ -1,0 +1,82 @@
+CODE SEGMENT PARA 'CODE'
+    ASSUME CS:CODE
+START:
+    MOV AH, 0
+    INT 33H ; BUTTON -> AL
+    SUB AL, 10000B
+    CMP AL, 3H
+    JA PRSW ; UNAVAILABLE
+    MOV BL, AL ; BL IS FUNCTION 1+ 2- 3*
+PRSW:
+    ; MOV DX, 06060H ; DEBUG
+    ; MOV BL, 3 ; DEBUG
+    INT 31H ; SWITCH -> DX
+    INT 30H ; LED
+    ; READ FUNCTION
+    CMP BL, 2
+    JZ PSUB
+    CMP BL, 3
+    JZ PMUL
+    JMP PADD
+PADD:
+    MOV AL, DH
+    XOR DH, DH
+    ADD DL, AL
+    ADC DH, 0
+    JMP PPRT
+PSUB:
+    CMP DH, DL
+    JB PPRTE
+    MOV AL, DH
+    XOR DH, DH
+    SUB AL, DL
+    XCHG DL, AL
+    JMP PPRT
+PMUL:
+    MOV AL, DL
+    MUL DH
+    MOV DX, AX
+    CMP DX, 270FH
+    JA PPRTE
+    JMP PPRT
+PPRTE:
+    MOV AH, 0
+    MOV AL, 00001111B
+    INT 32H ; ENABLE DIG
+    MOV AH, 1
+    MOV DX, 0EH
+    INT 32H ; SHOW DIG
+    JMP START
+PPRT:
+    MOV AH, 0
+    MOV AL, 00001111B
+    INT 32H ; ENABLE DIG
+    ; RESULT IN DX
+    XOR BH, BH ; COUNTER
+    MOV AX, DX
+    MOV CX, 10
+PHEX:
+    XOR DX, DX
+    DIV CX
+    PUSH DX
+    INC BH
+    CMP AX, 0
+    JA PHEX
+    XOR DX, DX
+    XOR CX, CX
+PBCD:
+    DEC BH
+    POP AX
+    MOV CH, BH
+    MOV CL, 2
+    SAL CH, CL
+    XCHG CH, CL
+    SAL AX, CL
+    OR DX, AX
+    CMP BH, 0
+    JA PBCD
+    MOV AH, 1
+    INT 32H ; SHOW DIG
+    JMP START
+CODE ENDS
+END START

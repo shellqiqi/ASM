@@ -1,0 +1,162 @@
+Microsoft (R) Macro Assembler Version 6.11		    11/19/17 14:42:14
+4-4-1.asm						     Page 1 - 1
+
+
+ 0000				DATA SEGMENT
+ 0000  0008 [			    INPUTNUM DB 8 DUP(0) ; PRODUCT
+        00
+       ]
+				    ; INPUTNUM DB 1,2,3,4,4,3,2,1 ; DEBUG
+ 0008 07			    GETBTNARGUMENT DB 7 ; POINTER
+ 0009				DATA ENDS
+ 0000				CODE SEGMENT PARA 'CODE'
+				    ASSUME CS:CODE
+ 0000				MAIN PROC FAR
+ 0000  E8 0036			    CALL GETBTN
+ 0003  E8 0068			    CALL DISPLAY
+ 0006  E8 0002			    CALL PALINDROME
+ 0009  EB F5			    JMP MAIN
+ 000B				MAIN ENDP
+
+ 000B				PALINDROME PROC NEAR
+ 000B  B8 0080			    MOV AX, 0080H ; PRODUCT
+				    ; MOV AX, DATA ; DEBUG
+ 000E  8E D8			    MOV DS, AX
+ 0010  8E C0			    MOV ES, AX
+ 0012  8D 36 0000 R		    LEA SI, INPUTNUM
+ 0016  8D 3E 0007 R		    LEA DI, INPUTNUM + 7
+ 001A  B9 0004			    MOV CX, 4
+ 001D				FOREACHCHAR:
+ 001D  8A 1C			    MOV BL, BYTE PTR [SI]
+ 001F  8A 3D			    MOV BH, BYTE PTR [DI]
+ 0021  46			    INC SI
+ 0022  4F			    DEC DI
+ 0023  38 FB			    CMP BL, BH
+ 0025  E1 F6			    LOOPZ FOREACHCHAR
+ 0027  74 08			    JE ACK
+ 0029  B4 00			    MOV AH, 0
+ 002B  BA 8000			    MOV DX, 8000H
+ 002E  CD 30			    INT 30H
+ 0030  C3			    RET
+ 0031				ACK:
+ 0031  B4 00			    MOV AH, 0
+ 0033  BA 0080			    MOV DX, 0080H
+ 0036  CD 30			    INT 30H
+ 0038  C3			    RET
+ 0039				PALINDROME ENDP
+
+ 0039				GETBTN PROC NEAR
+ 0039  B8 0080			    MOV AX, 0080H ; PRODUCT
+				    ; MOV AX, DATA ; DEBUG
+ 003C  8E D8			    MOV DS, AX
+ 003E  8E C0			    MOV ES, AX
+ 0040  8D 36 0008 R		    LEA SI, GETBTNARGUMENT
+ 0044  8D 3E 0000 R		    LEA DI, INPUTNUM
+				    ; READ BUTTON
+ 0048  B4 00			    MOV AH, 0
+ 004A  CD 33			    INT 33H
+ 004C  2C 10			    SUB AL, 10000B
+				    ; IF AVAILABLE
+ 004E  3C 0A			    CMP AL, 10
+ 0050  72 01			    JB KEYDOWN ; YES
+ 0052  C3			    RET ; NO
+				    ; END IF
+ 0053				KEYDOWN:
+ 0053  FE 04			    INC BYTE PTR [SI]
+				    ; IF OUT OF RANGE
+ 0055  80 3C 08			    CMP BYTE PTR [SI], 8
+ 0058  74 07			    JE CLEAN ; YES
+				    ; NO
+				    ; END IF
+ 005A  33 DB			    XOR BX, BX
+ 005C  8A 1C			    MOV BL, BYTE PTR [SI]
+ 005E  88 01			    MOV BYTE PTR [BX][DI], AL
+ 0060  C3			    RET
+ 0061				CLEAN:
+ 0061  B9 0007			    MOV CX, 7
+ 0064  FC			    CLD
+ 0065  AA			    STOSB
+ 0066  B0 00			    MOV AL, 0
+ 0068  F3/ AA			    REP STOSB
+ 006A  C6 04 00			    MOV BYTE PTR [SI], 0
+ 006D  C3			    RET
+ 006E				GETBTN ENDP
+
+ 006E				DISPLAY PROC NEAR
+ 006E  B8 0080			    MOV AX, 0080H ; PRODUCT
+				    ; MOV AX, DATA ; DEBUG
+ 0071  8E D8			    MOV DS, AX
+ 0073  8D 36 0000 R		    LEA SI, INPUTNUM
+ 0077  B1 04			    MOV CL, 4
+ 0079  FC			    CLD
+ 007A  AC			    LODSB ; HIGH 4 DIGITS START
+ 007B  D2 E0			    SHL AL, CL
+ 007D  8A F0			    MOV DH, AL
+ 007F  AC			    LODSB
+ 0080  0A F0			    OR DH, AL
+ 0082  AC			    LODSB
+ 0083  D2 E0			    SHL AL, CL
+ 0085  8A D0			    MOV DL, AL
+ 0087  AC			    LODSB
+ 0088  0A D0			    OR DL, AL ; END RESULT IN DX
+ 008A  52			    PUSH DX
+ 008B  AC			    LODSB ; LOW 4 DIGITS START
+ 008C  D2 E0			    SHL AL, CL
+ 008E  8A F0			    MOV DH, AL
+ 0090  AC			    LODSB
+ 0091  0A F0			    OR DH, AL
+ 0093  AC			    LODSB
+ 0094  D2 E0			    SHL AL, CL
+ 0096  8A D0			    MOV DL, AL
+ 0098  AC			    LODSB
+ 0099  0A D0			    OR DL, AL ; END RESULT IN DX
+ 009B  B4 00			    MOV AH, 0
+ 009D  B0 FF			    MOV AL, 0FFH
+ 009F  CD 32			    INT 32H ; SET DIGIT ENABLED
+ 00A1  B4 01			    MOV AH, 1
+ 00A3  CD 32			    INT 32H ; DISPLAY LOW 4 DIGITS
+ 00A5  5A			    POP DX
+ 00A6  B4 02			    MOV AH, 2
+ 00A8  CD 32			    INT 32H ; DISPLAY HIGH 4 DIGITS
+ 00AA  C3			    RET
+ 00AB				DISPLAY ENDP
+
+ 00AB				CODE ENDS
+				END MAIN
+Microsoft (R) Macro Assembler Version 6.11		    11/19/17 14:42:14
+4-4-1.asm						     Symbols 2 - 1
+
+
+
+
+Segments and Groups:
+
+                N a m e                 Size     Length   Align   Combine Class
+
+CODE . . . . . . . . . . . . . .	16 Bit	 00AB	  Para	  Private 'CODE'	
+DATA . . . . . . . . . . . . . .	16 Bit	 0009	  Para	  Private 
+
+
+Procedures,  parameters and locals:
+
+                N a m e                 Type     Value    Attr
+
+DISPLAY  . . . . . . . . . . . .	P Near	 006E	  CODE	Length= 003D Private
+GETBTN . . . . . . . . . . . . .	P Near	 0039	  CODE	Length= 0035 Private
+MAIN . . . . . . . . . . . . . .	P Far	 0000	  CODE	Length= 000B Private
+PALINDROME . . . . . . . . . . .	P Near	 000B	  CODE	Length= 002E Private
+
+
+Symbols:
+
+                N a m e                 Type     Value    Attr
+
+ACK  . . . . . . . . . . . . . .	L Near	 0031	  CODE	
+CLEAN  . . . . . . . . . . . . .	L Near	 0061	  CODE	
+FOREACHCHAR  . . . . . . . . . .	L Near	 001D	  CODE	
+GETBTNARGUMENT . . . . . . . . .	Byte	 0008	  DATA	
+INPUTNUM . . . . . . . . . . . .	Byte	 0000	  DATA	
+KEYDOWN  . . . . . . . . . . . .	L Near	 0053	  CODE	
+
+	   0 Warnings
+	   0 Errors

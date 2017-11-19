@@ -1,0 +1,56 @@
+Microsoft (R) Macro Assembler Version 6.11		    11/08/17 19:25:07
+4-2-3.asm						     Page 1 - 1
+
+
+ 0000				DATA SEGMENT
+ 0000 00 01 04 09 10 19		    TABLE DB 0*0, 1*1, 2*2, 3*3, 4*4, 5*5, 6*6, 7*7, 8*8, 9*9
+       24 31 40 51
+ 000A				DATA ENDS
+ 0000				CODE SEGMENT
+				    ASSUME CS:CODE, DS:DATA
+ 0000				START:
+ 0000  B8 0080			    MOV AX, 0080H
+4-2-3.asm(7): warning A4012: line number information for segment without class 'CODE' : CODE
+ 0003  8E D8			    MOV DS, AX ; SET DS
+ 0005  B4 00			    MOV AH, 0
+ 0007  CD 31			    INT 31H ; SW -> DX
+ 0009  B0 03			    MOV AL, 00000011B
+ 000B  CD 32			    INT 32H ; ENABLE DIG
+				    ; MOV DX, 9 ; DEBUG
+ 000D  83 FA 0A			    CMP DX, 10
+ 0010  72 03			    JB NEXT
+ 0012  BA 0000			    MOV DX, 0
+ 0015				NEXT:
+ 0015  BB 0000 R		    MOV BX, OFFSET TABLE
+ 0018  8A C2			    MOV AL, DL
+ 001A  D7			    XLAT
+ 001B  8A D0			    MOV DL, AL
+ 001D  B4 01			    MOV AH, 1
+ 001F  CD 32			    INT 32H ; DISPLAY
+ 0021  EB DD			    JMP START
+ 0023				CODE ENDS
+				END START
+Microsoft (R) Macro Assembler Version 6.11		    11/08/17 19:25:07
+4-2-3.asm						     Symbols 2 - 1
+
+
+
+
+Segments and Groups:
+
+                N a m e                 Size     Length   Align   Combine Class
+
+CODE . . . . . . . . . . . . . .	16 Bit	 0023	  Para	  Private 
+DATA . . . . . . . . . . . . . .	16 Bit	 000A	  Para	  Private 
+
+
+Symbols:
+
+                N a m e                 Type     Value    Attr
+
+NEXT . . . . . . . . . . . . . .	L Near	 0015	  CODE	
+START  . . . . . . . . . . . . .	L Near	 0000	  CODE	
+TABLE  . . . . . . . . . . . . .	Byte	 0000	  DATA	
+
+	   1 Warnings
+	   0 Errors

@@ -1,0 +1,115 @@
+Microsoft (R) Macro Assembler Version 6.11		    11/19/17 14:18:07
+4-3-3.asm						     Page 1 - 1
+
+
+ 0000				CODE SEGMENT PARA 'CODE'
+				    ASSUME CS:CODE
+ 0000				START:
+ 0000  B4 00			    MOV AH, 0
+ 0002  CD 33			    INT 33H ; BUTTON -> AL
+ 0004  2C 10			    SUB AL, 10000B
+ 0006  3C 03			    CMP AL, 3H
+ 0008  77 02			    JA PRSW ; UNAVAILABLE
+ 000A  8A D8			    MOV BL, AL ; BL IS FUNCTION 1+ 2- 3*
+ 000C				PRSW:
+				    ; MOV DX, 06060H ; DEBUG
+				    ; MOV BL, 3 ; DEBUG
+ 000C  CD 31			    INT 31H ; SWITCH -> DX
+ 000E  CD 30			    INT 30H ; LED
+				    ; READ FUNCTION
+ 0010  80 FB 02			    CMP BL, 2
+ 0013  74 12			    JZ PSUB
+ 0015  80 FB 03			    CMP BL, 3
+ 0018  74 1B			    JZ PMUL
+ 001A  EB 00			    JMP PADD
+ 001C				PADD:
+ 001C  8A C6			    MOV AL, DH
+ 001E  32 F6			    XOR DH, DH
+ 0020  02 D0			    ADD DL, AL
+ 0022  80 D6 00			    ADC DH, 0
+ 0025  EB 2B			    JMP PPRT
+ 0027				PSUB:
+ 0027  38 D6			    CMP DH, DL
+ 0029  72 18			    JB PPRTE
+ 002B  8A C6			    MOV AL, DH
+ 002D  32 F6			    XOR DH, DH
+ 002F  2A C2			    SUB AL, DL
+ 0031  86 D0			    XCHG DL, AL
+ 0033  EB 1D			    JMP PPRT
+ 0035				PMUL:
+ 0035  8A C2			    MOV AL, DL
+ 0037  F6 E6			    MUL DH
+ 0039  8B D0			    MOV DX, AX
+ 003B  81 FA 270F		    CMP DX, 270FH
+ 003F  77 02			    JA PPRTE
+ 0041  EB 0F			    JMP PPRT
+ 0043				PPRTE:
+ 0043  B4 00			    MOV AH, 0
+ 0045  B0 0F			    MOV AL, 00001111B
+ 0047  CD 32			    INT 32H ; ENABLE DIG
+ 0049  B4 01			    MOV AH, 1
+ 004B  BA 000E			    MOV DX, 0EH
+ 004E  CD 32			    INT 32H ; SHOW DIG
+ 0050  EB AE			    JMP START
+ 0052				PPRT:
+ 0052  B4 00			    MOV AH, 0
+ 0054  B0 0F			    MOV AL, 00001111B
+ 0056  CD 32			    INT 32H ; ENABLE DIG
+				    ; RESULT IN DX
+ 0058  32 FF			    XOR BH, BH ; COUNTER
+ 005A  8B C2			    MOV AX, DX
+ 005C  B9 000A			    MOV CX, 10
+ 005F				PHEX:
+ 005F  33 D2			    XOR DX, DX
+ 0061  F7 F1			    DIV CX
+ 0063  52			    PUSH DX
+ 0064  FE C7			    INC BH
+ 0066  83 F8 00			    CMP AX, 0
+ 0069  77 F4			    JA PHEX
+ 006B  33 D2			    XOR DX, DX
+ 006D  33 C9			    XOR CX, CX
+ 006F				PBCD:
+ 006F  FE CF			    DEC BH
+ 0071  58			    POP AX
+ 0072  8A EF			    MOV CH, BH
+ 0074  B1 02			    MOV CL, 2
+ 0076  D2 E5			    SAL CH, CL
+ 0078  86 E9			    XCHG CH, CL
+ 007A  D3 E0			    SAL AX, CL
+ 007C  0B D0			    OR DX, AX
+ 007E  80 FF 00			    CMP BH, 0
+ 0081  77 EC			    JA PBCD
+ 0083  B4 01			    MOV AH, 1
+ 0085  CD 32			    INT 32H ; SHOW DIG
+ 0087  E9 FF76			    JMP START
+ 008A				CODE ENDS
+				END START
+Microsoft (R) Macro Assembler Version 6.11		    11/19/17 14:18:07
+4-3-3.asm						     Symbols 2 - 1
+
+
+
+
+Segments and Groups:
+
+                N a m e                 Size     Length   Align   Combine Class
+
+CODE . . . . . . . . . . . . . .	16 Bit	 008A	  Para	  Private 'CODE'	
+
+
+Symbols:
+
+                N a m e                 Type     Value    Attr
+
+PADD . . . . . . . . . . . . . .	L Near	 001C	  CODE	
+PBCD . . . . . . . . . . . . . .	L Near	 006F	  CODE	
+PHEX . . . . . . . . . . . . . .	L Near	 005F	  CODE	
+PMUL . . . . . . . . . . . . . .	L Near	 0035	  CODE	
+PPRTE  . . . . . . . . . . . . .	L Near	 0043	  CODE	
+PPRT . . . . . . . . . . . . . .	L Near	 0052	  CODE	
+PRSW . . . . . . . . . . . . . .	L Near	 000C	  CODE	
+PSUB . . . . . . . . . . . . . .	L Near	 0027	  CODE	
+START  . . . . . . . . . . . . .	L Near	 0000	  CODE	
+
+	   0 Warnings
+	   0 Errors

@@ -1,0 +1,44 @@
+Microsoft (R) Macro Assembler Version 6.11		    11/08/17 18:58:07
+4-2-2.asm						     Page 1 - 1
+
+
+ 0000				CODE SEGMENT
+				ASSUME CS:CODE
+ 0000				START:
+ 0000  B4 00			    MOV AH, 0
+4-2-2.asm(4): warning A4012: line number information for segment without class 'CODE' : CODE
+ 0002  CD 31			    INT 31H ; SW -> DX
+				    ; MOV DH, 0F1H ; DEBUG
+				    ; MOV DL, 0F2H ; DEBUG DX = 0F1F2H
+ 0004  8A C6			    MOV AL, DH
+ 0006  32 F6			    XOR DH, DH
+ 0008  02 D0			    ADD DL, AL
+ 000A  80 D6 00			    ADC DH, 0 ; RESULT IN DX
+ 000D  B0 07			    MOV AL, 00000111B
+ 000F  CD 32			    INT 32H ; SET DIG ENABLE
+ 0011  B4 01			    MOV AH, 1
+ 0013  CD 32			    INT 32H ; SET DIG
+ 0015  EB E9			    JMP START
+ 0017				CODE ENDS
+				END START
+Microsoft (R) Macro Assembler Version 6.11		    11/08/17 18:58:07
+4-2-2.asm						     Symbols 2 - 1
+
+
+
+
+Segments and Groups:
+
+                N a m e                 Size     Length   Align   Combine Class
+
+CODE . . . . . . . . . . . . . .	16 Bit	 0017	  Para	  Private 
+
+
+Symbols:
+
+                N a m e                 Type     Value    Attr
+
+START  . . . . . . . . . . . . .	L Near	 0000	  CODE	
+
+	   1 Warnings
+	   0 Errors
