@@ -1,0 +1,67 @@
+CODE SEGMENT PARA 'CODE'
+    ASSUME CS:CODE
+MAIN PROC FAR
+    ; READ BUTTON
+    MOV AH, 0
+    INT 33H ; INPUT IN AL
+    SUB AL, 10000B
+    CMP AL, 6
+    JA MAIN
+    
+    CALL FAC
+    
+    XOR BH, BH ; COUNTER
+    MOV AX, DX
+    MOV CX, 10
+PHEX:
+    XOR DX, DX
+    DIV CX
+    PUSH DX
+    INC BH
+    CMP AX, 0
+    JA PHEX
+    XOR DX, DX
+    XOR CX, CX
+PBCD:
+    DEC BH
+    POP AX
+    MOV CH, BH
+    MOV CL, 2
+    SAL CH, CL
+    XCHG CH, CL
+    SAL AX, CL
+    OR DX, AX
+    CMP BH, 0
+    JA PBCD
+    
+    MOV AH, 0
+    MOV AL, 00001111B
+    INT 32H
+    MOV AH, 1
+    INT 32H ; SHOW DIG
+
+    JMP MAIN
+MAIN ENDP
+
+FAC PROC NEAR
+    CMP AL, 0
+    JNZ F1
+    MOV DX, 1 ; 0! = 1
+    RET
+F1:
+    PUSH AX ; N PUSH IN STACK
+    DEC AL  ; AL--
+    CALL FAC; RECURSIVE
+    POP CX
+    CALL MULT
+    RET
+FAC ENDP
+
+MULT PROC NEAR
+    MOV AL, CL
+    MUL DL
+    MOV DX, AX
+    RET
+MULT ENDP
+CODE ENDS
+END MAIN

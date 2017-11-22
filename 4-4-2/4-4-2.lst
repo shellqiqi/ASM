@@ -1,0 +1,103 @@
+Microsoft (R) Macro Assembler Version 6.11		    11/22/17 19:42:06
+4-4-2.asm						     Page 1 - 1
+
+
+ 0000				CODE SEGMENT PARA 'CODE'
+				    ASSUME CS:CODE
+ 0000				MAIN PROC FAR
+				    ; READ BUTTON
+ 0000  B4 00			    MOV AH, 0
+ 0002  CD 33			    INT 33H ; INPUT IN AL
+ 0004  2C 10			    SUB AL, 10000B
+ 0006  3C 06			    CMP AL, 6
+ 0008  77 F6			    JA MAIN
+				    
+ 000A  E8 0037			    CALL FAC
+				    
+ 000D  32 FF			    XOR BH, BH ; COUNTER
+ 000F  8B C2			    MOV AX, DX
+ 0011  B9 000A			    MOV CX, 10
+ 0014				PHEX:
+ 0014  33 D2			    XOR DX, DX
+ 0016  F7 F1			    DIV CX
+ 0018  52			    PUSH DX
+ 0019  FE C7			    INC BH
+ 001B  83 F8 00			    CMP AX, 0
+ 001E  77 F4			    JA PHEX
+ 0020  33 D2			    XOR DX, DX
+ 0022  33 C9			    XOR CX, CX
+ 0024				PBCD:
+ 0024  FE CF			    DEC BH
+ 0026  58			    POP AX
+ 0027  8A EF			    MOV CH, BH
+ 0029  B1 02			    MOV CL, 2
+ 002B  D2 E5			    SAL CH, CL
+ 002D  86 E9			    XCHG CH, CL
+ 002F  D3 E0			    SAL AX, CL
+ 0031  0B D0			    OR DX, AX
+ 0033  80 FF 00			    CMP BH, 0
+ 0036  77 EC			    JA PBCD
+				    
+ 0038  B4 00			    MOV AH, 0
+ 003A  B0 0F			    MOV AL, 00001111B
+ 003C  CD 32			    INT 32H
+ 003E  B4 01			    MOV AH, 1
+ 0040  CD 32			    INT 32H ; SHOW DIG
+				
+ 0042  EB BC			    JMP MAIN
+ 0044				MAIN ENDP
+				
+ 0044				FAC PROC NEAR
+ 0044  3C 00			    CMP AL, 0
+ 0046  75 04			    JNZ F1
+ 0048  BA 0001			    MOV DX, 1 ; 0! = 1
+ 004B  C3			    RET
+ 004C				F1:
+ 004C  50			    PUSH AX ; N PUSH IN STACK
+ 004D  FE C8			    DEC AL  ; AL--
+ 004F  E8 FFF2			    CALL FAC; RECURSIVE
+ 0052  59			    POP CX
+ 0053  E8 0001			    CALL MULT
+ 0056  C3			    RET
+ 0057				FAC ENDP
+				
+ 0057				MULT PROC NEAR
+ 0057  8A C1			    MOV AL, CL
+ 0059  F6 E2			    MUL DL
+ 005B  8B D0			    MOV DX, AX
+ 005D  C3			    RET
+ 005E				MULT ENDP
+ 005E				CODE ENDS
+				END MAIN
+Microsoft (R) Macro Assembler Version 6.11		    11/22/17 19:42:06
+4-4-2.asm						     Symbols 2 - 1
+
+
+
+
+Segments and Groups:
+
+                N a m e                 Size     Length   Align   Combine Class
+
+CODE . . . . . . . . . . . . . .	16 Bit	 005E	  Para	  Private 'CODE'	
+
+
+Procedures,  parameters and locals:
+
+                N a m e                 Type     Value    Attr
+
+FAC  . . . . . . . . . . . . . .	P Near	 0044	  CODE	Length= 0013 Private
+MAIN . . . . . . . . . . . . . .	P Far	 0000	  CODE	Length= 0044 Private
+MULT . . . . . . . . . . . . . .	P Near	 0057	  CODE	Length= 0007 Private
+
+
+Symbols:
+
+                N a m e                 Type     Value    Attr
+
+F1 . . . . . . . . . . . . . . .	L Near	 004C	  CODE	
+PBCD . . . . . . . . . . . . . .	L Near	 0024	  CODE	
+PHEX . . . . . . . . . . . . . .	L Near	 0014	  CODE	
+
+	   0 Warnings
+	   0 Errors
